@@ -372,8 +372,8 @@ def show_confusion_matrix(matrix):
     fig.colorbar(cax)
 
 
-show_confusion_matrix(sdg_cm)
-plt.show()
+# show_confusion_matrix(sdg_cm)
+# plt.show()
 
 # sklearn绘制混淆矩阵
 plt.matshow(sgd_cm, cmap=plt.cm.gray)
@@ -397,16 +397,16 @@ X_55 = X_train[(y_train == num_5) & (y_train_predict == num_5)]
 
 # 绘制3和5的错误分类图，左上角为是正确分类为3的，右上角为错误分类为3的
 # 左下角为错误分类为5的3的图片，右下角为正确分类为5的图片
-plt.figure(figsize=(8, 8))
-plt.subplot(221)
-show_digit(X_33[:25], num_per_row=5)
-plt.subplot(222)
-show_digit(X_35[:25], num_per_row=5)
-plt.subplot(223)
-show_digit(X_53[:25], num_per_row=5)
-plt.subplot(224)
-show_digit(X_55[:25], num_per_row=5)
-plt.show()
+# plt.figure(figsize=(8, 8))
+# plt.subplot(221)
+# show_digit(X_33[:25], num_per_row=5)
+# plt.subplot(222)
+# show_digit(X_35[:25], num_per_row=5)
+# plt.subplot(223)
+# show_digit(X_53[:25], num_per_row=5)
+# plt.subplot(224)
+# show_digit(X_55[:25], num_per_row=5)
+# plt.show()
 
 
 # 多标签分类
