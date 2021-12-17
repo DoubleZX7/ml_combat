@@ -52,20 +52,21 @@ X = all_data[:, range(784)]
 y = all_data[:, 784]
 y = y.astype(np.uint8)
 
+
 # 显示一张图片
-# def show_img(data):
-#     """
-#     显示一张图片
-#     :param data:
-#     :return:
-#     """
-#     data = data.reshape(28, 28)
-#     plt.imshow(data, cmap=mpl.cm.binary, interpolation="nearest")
-#     plt.axis("off")
+def show_img(data):
+    """
+    显示一张图片
+    :param data:
+    :return:
+    """
+    data = data.reshape(28, 28)
+    plt.imshow(data, cmap=mpl.cm.binary, interpolation="nearest")
+    plt.axis("off")
 
 
 one_digit = X[0]
-# plt.show()
+plt.show()
 
 # show_img(one_digit)
 # print(y[0])
@@ -97,72 +98,72 @@ one_digit = X[0]
 # plt.show()
 
 # 生成测试集和训练集
-# X_train, X_test, y_train, y_test = X[:60000], X[60000:], y[:60000], y[60000:]
+X_train, X_test, y_train, y_test = X[:60000], X[60000:], y[:60000], y[60000:]
 
 # 训练一个二元分类器区分是5和不是5
-# y_train_5 = (y_train == 5)
-# y_test_5 = (y_test == 5)
+y_train_5 = (y_train == 5)
+y_test_5 = (y_test == 5)
 
 # print(y_train_5)
-# sgd_clf = SGDClassifier(random_state=42)
-# sgd_clf.fit(X_train, y_train_5)
-# print(sgd_clf.predict([one_digit]))
+sgd_clf = SGDClassifier(random_state=42)
+sgd_clf.fit(X_train, y_train_5)
+print(sgd_clf.predict([one_digit]))
 
 # 交叉验证
-# cvs = cross_val_score(sgd_clf, X_train, y_train_5, cv=3, scoring="accuracy")
-# print(cvs)
+cvs = cross_val_score(sgd_clf, X_train, y_train_5, cv=3, scoring="accuracy")
+print(cvs)
 
 # 使用StratifiedKFold自定义交叉验证
-# sk_fold = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
-#
-# for train_index, test_index in sk_fold.split(X_train, y_train_5):
-#     clone_sgd = clone(sgd_clf)
-#     fold_X_train = X_train[train_index]
-#     fold_y_train = y_train_5[train_index]
-#     fold_X_test = X_train[test_index]
-#     fold_y_test = y_train_5[test_index]
-#
-#     clone_sgd.fit(fold_X_train, fold_y_train)
-#     pre_y = clone_sgd.predict(fold_X_test)
-#     num_true = sum(np.array(fold_y_test) == np.array(pre_y))
-#     print(num_true / len(pre_y))
+sk_fold = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+
+for train_index, test_index in sk_fold.split(X_train, y_train_5):
+    clone_sgd = clone(sgd_clf)
+    fold_X_train = X_train[train_index]
+    fold_y_train = y_train_5[train_index]
+    fold_X_test = X_train[test_index]
+    fold_y_test = y_train_5[test_index]
+
+    clone_sgd.fit(fold_X_train, fold_y_train)
+    pre_y = clone_sgd.predict(fold_X_test)
+    num_true = sum(np.array(fold_y_test) == np.array(pre_y))
+    print(num_true / len(pre_y))
 
 
 # 自定义一个分类器分类器的目的是把所有数据都分类为不是5
-# class Never5Classifier(BaseEstimator):
-#     def fit(self, X, y=None):
-#         pass
-#
-#     def predict(self, X):
-#         return np.zeros((len(X), 1), dtype=bool)
+class Never5Classifier(BaseEstimator):
+    def fit(self, X, y=None):
+        pass
+
+    def predict(self, X):
+        return np.zeros((len(X), 1), dtype=bool)
 
 
-# print(sum(y_train_5) / len(y_train_5))
-# print(len(X_train))
+print(sum(y_train_5) / len(y_train_5))
+print(len(X_train))
 # 交叉验证这个全部为非5的分类器的性能
-# never_5 = Never5Classifier()
-# cvs = cross_val_score(never_5, X_train, y_train_5, cv=3, scoring="accuracy")
-# print(cvs)
+never_5 = Never5Classifier()
+cvs = cross_val_score(never_5, X_train, y_train_5, cv=3, scoring="accuracy")
+print(cvs)
 
 # 混淆矩阵
 # 随机梯度下降分类器的混淆矩阵
-# y_train_pred = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3)
-# cm = confusion_matrix(y_train_5, y_train_pred)
-# print(cm)
+y_train_pred = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3)
+cm = confusion_matrix(y_train_5, y_train_pred)
+print(cm)
 
 # 完美的混淆矩阵
-# perfect_predictions = y_train_5
-# cm = confusion_matrix(y_train_5, perfect_predictions)
-# print(cm)
+perfect_predictions = y_train_5
+cm = confusion_matrix(y_train_5, perfect_predictions)
+print(cm)
 
 # 精度与召回率
-# precision = precision_score(y_train_5, y_train_pred)
-# print(precision)
-# recall = recall_score(y_train_5, y_train_pred)
-# print(recall)
+precision = precision_score(y_train_5, y_train_pred)
+print(precision)
+recall = recall_score(y_train_5, y_train_pred)
+print(recall)
 # f1分数，结合了精度和召回率的值
-# f1 = f1_score(y_train_5, y_train_pred)
-# print(f1)
+f1 = f1_score(y_train_5, y_train_pred)
+print(f1)
 
 # 精度和召回率之间的权衡
 # 使用decision_function查看模型用于预测的决策分数
@@ -178,268 +179,269 @@ one_digit = X[0]
 # print(one_digit_pre)
 
 # 绘制精度召回率曲线
-# y_score = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3, method="decision_function")
-# precision, recall, threshold = precision_recall_curve(y_train_5, y_score)
+y_score = cross_val_predict(sgd_clf, X_train, y_train_5, cv=3, method="decision_function")
+precision, recall, threshold = precision_recall_curve(y_train_5, y_score)
 
-# def show_precision_recall_vs_threshold(precision, recall, threshold):
-#     """
-#     显示精度召回率和阈值之间的关系
-#     :param precision:
-#     :param recall:
-#     :param threshold:
-#     :return:
-#     """
-#     plt.plot(threshold, precision[:-1], "b--", label="Precision", linewidth=2)
-#     plt.plot(threshold, recall[:-1], "g--", label="Precision", linewidth=2)
-#     plt.legend(loc="center right", fontsize=16)
-#     plt.xlabel("Threshold", fontsize=16)
-#     plt.axis([-10000, 10000, 0, 1])
-#     plt.grid(True)
+
+def show_precision_recall_vs_threshold(precision, recall, threshold):
+    """
+    显示精度召回率和阈值之间的关系
+    :param precision:
+    :param recall:
+    :param threshold:
+    :return:
+    """
+    plt.plot(threshold, precision[:-1], "b--", label="Precision", linewidth=2)
+    plt.plot(threshold, recall[:-1], "g--", label="Precision", linewidth=2)
+    plt.legend(loc="center right", fontsize=16)
+    plt.xlabel("Threshold", fontsize=16)
+    plt.axis([-10000, 10000, 0, 1])
+    plt.grid(True)
 
 
 # 计算精度达到90时的阈值和召回率
-# first_max_index = np.argmax(precision >= 0.9)
-# precision_90_recall = recall[first_max_index]
-# precision_90_threshold = threshold[first_max_index]
+first_max_index = np.argmax(precision >= 0.9)
+precision_90_recall = recall[first_max_index]
+precision_90_threshold = threshold[first_max_index]
 
-# show_precision_recall_vs_threshold(precision, recall, threshold)
+show_precision_recall_vs_threshold(precision, recall, threshold)
 # 添加辅助线
-# plt.plot([precision_90_threshold, precision_90_threshold], [0., 0.9], "r:")
-# plt.plot([-10000, precision_90_threshold], [0.9, 0.9], "r:")
-# plt.plot([-10000, precision_90_threshold], [precision_90_recall, precision_90_recall], "r:")
+plt.plot([precision_90_threshold, precision_90_threshold], [0., 0.9], "r:")
+plt.plot([-10000, precision_90_threshold], [0.9, 0.9], "r:")
+plt.plot([-10000, precision_90_threshold], [precision_90_recall, precision_90_recall], "r:")
 # 添加交点
-# plt.plot([precision_90_threshold], [0.9], "ro")
-# plt.plot([precision_90_threshold], [precision_90_recall], "ro")
-# plt.show()
+plt.plot([precision_90_threshold], [0.9], "ro")
+plt.plot([precision_90_threshold], [precision_90_recall], "ro")
+plt.show()
 
 # print((y_train_pred == (y_score > 0)).all())
 
 
-# def show_recall_precision(recall, precision):
-#     """
-#     绘制召回率与精度的关系
-#     :param recall:
-#     :param precision:
-#     :return:
-#     """
-#     plt.plot(recall, precision, "b-", linewidth=2)
-#     plt.xlabel("Recall", fontsize=16)
-#     plt.ylabel("Precision", fontsize=16)
-#     plt.axis([0, 1, 0, 1])
-#     plt.grid(True)
-#
-#
-# plt.figure(figsize=(8, 6))
-# show_recall_precision(recall, precision)
-# # 计算精度到达90时的召回率
-# precision_90_recall = recall[np.argmax(precision >= 0.9)]
-# # 绘制辅助线
-# plt.plot([precision_90_recall, precision_90_recall], [0, 0.9], "r:")
-# plt.plot([0, precision_90_recall], [0.9, 0.9], "r:")
-# # 绘制交点
-# plt.plot([precision_90_recall], [0.9], "ro")
-# plt.show()
+def show_recall_precision(recall, precision):
+    """
+    绘制召回率与精度的关系
+    :param recall:
+    :param precision:
+    :return:
+    """
+    plt.plot(recall, precision, "b-", linewidth=2)
+    plt.xlabel("Recall", fontsize=16)
+    plt.ylabel("Precision", fontsize=16)
+    plt.axis([0, 1, 0, 1])
+    plt.grid(True)
+
+
+plt.figure(figsize=(8, 6))
+show_recall_precision(recall, precision)
+# 计算精度到达90时的召回率
+precision_90_recall = recall[np.argmax(precision >= 0.9)]
+# 绘制辅助线
+plt.plot([precision_90_recall, precision_90_recall], [0, 0.9], "r:")
+plt.plot([0, precision_90_recall], [0.9, 0.9], "r:")
+# 绘制交点
+plt.plot([precision_90_recall], [0.9], "ro")
+plt.show()
 
 # 使用精度大于90的阈值来查看精度和召回率
-# precision_90_threshold = threshold[np.argmax(precision >= 0.9)]
-#
-# y_train_90 = (y_score >= precision_90_threshold)
-#
-# recall_90 = recall_score(y_train_5, y_train_90)
-# precision_90 = precision_score(y_train_5, y_train_90)
-# print(recall_90)
-# print(precision_90)
+precision_90_threshold = threshold[np.argmax(precision >= 0.9)]
+
+y_train_90 = (y_score >= precision_90_threshold)
+
+recall_90 = recall_score(y_train_5, y_train_90)
+precision_90 = precision_score(y_train_5, y_train_90)
+print(recall_90)
+print(precision_90)
 
 # ROC曲线
-# fpr, tpr, thresholds = roc_curve(y_train_5, y_score)
+fpr, tpr, thresholds = roc_curve(y_train_5, y_score)
 
 
 # 绘制roc曲线
-# def show_roc_curve(fpr, tpr, label=None):
-#     plt.plot(fpr, tpr, linewidth=2, label=label)
-#     plt.plot([0, 1], [0, 1], "k--")
-#     plt.axis([0, 1, 0, 1])
-#     plt.xlabel("FPR", fontsize=16)
-#     plt.ylabel("TPR", fontsize=16)
-#     plt.grid(True)
+def show_roc_curve(fpr, tpr, label=None):
+    plt.plot(fpr, tpr, linewidth=2, label=label)
+    plt.plot([0, 1], [0, 1], "k--")
+    plt.axis([0, 1, 0, 1])
+    plt.xlabel("FPR", fontsize=16)
+    plt.ylabel("TPR", fontsize=16)
+    plt.grid(True)
 
 
-# plt.figure(figsize=(8, 6))
-# show_roc_curve(fpr, tpr)
+plt.figure(figsize=(8, 6))
+show_roc_curve(fpr, tpr)
 # 查看到精度到达90的召回率（tpr）时fpr的值为多少
-# fpr_precision_90 = fpr[np.argmax(tpr >= precision_90_recall)]
-# print(fpr_precision_90)
-# plt.plot([fpr_precision_90, fpr_precision_90], [0, precision_90_recall], ":r")
-# plt.plot([0, fpr_precision_90], [precision_90_recall, precision_90_recall], ":r")
-# plt.plot([fpr_precision_90], [precision_90_recall], "ro")
-# plt.show()
+fpr_precision_90 = fpr[np.argmax(tpr >= precision_90_recall)]
+print(fpr_precision_90)
+plt.plot([fpr_precision_90, fpr_precision_90], [0, precision_90_recall], ":r")
+plt.plot([0, fpr_precision_90], [precision_90_recall, precision_90_recall], ":r")
+plt.plot([fpr_precision_90], [precision_90_recall], "ro")
+plt.show()
 
 # 查看roc曲线的auc
-# auc = roc_auc_score(y_train_5, y_score)
-# print(auc)
+auc = roc_auc_score(y_train_5, y_score)
+print(auc)
 
 # 训练一个随机森林分类器模型
-# forest_fcl = RandomForestClassifier(n_estimators=100, random_state=42)
-# forest_fcl.fit(X_train, y_train_5)
+forest_fcl = RandomForestClassifier(n_estimators=100, random_state=42)
+forest_fcl.fit(X_train, y_train_5)
 # 交叉验证
-# y_proba_forest = cross_val_predict(forest_fcl, X_train, y_train_5, cv=3, method="predict_proba")
-# y_score_forest = y_proba_forest[:, 1]
+y_proba_forest = cross_val_predict(forest_fcl, X_train, y_train_5, cv=3, method="predict_proba")
+y_score_forest = y_proba_forest[:, 1]
 
 # 绘制roc曲线
-# fpr_forest, tpr_forest, thresholds_forest = roc_curve(y_train_5, y_score_forest)
-# tpr_forest_90 = tpr_forest[np.argmax(fpr_forest >= fpr_precision_90)]
+fpr_forest, tpr_forest, thresholds_forest = roc_curve(y_train_5, y_score_forest)
+tpr_forest_90 = tpr_forest[np.argmax(fpr_forest >= fpr_precision_90)]
 
-# plt.figure(figsize=(8, 6))
-# plt.plot(fpr_forest, tpr_forest, label="RANDOM FOREST")
-# show_roc_curve(fpr, tpr, label="SGD")
+plt.figure(figsize=(8, 6))
+plt.plot(fpr_forest, tpr_forest, label="RANDOM FOREST")
+show_roc_curve(fpr, tpr, label="SGD")
 # 绘制辅助线
-# plt.plot([fpr_precision_90, fpr_precision_90], [0., precision_90_recall], "r:")
-# plt.plot([0., fpr_precision_90], [precision_90_recall, precision_90_recall], "r:")
-# plt.plot([fpr_precision_90, fpr_precision_90], [0., tpr_forest_90], "r:")
-# plt.plot([fpr_precision_90], [precision_90_recall], "ro")
-# plt.plot([fpr_precision_90], [tpr_forest_90], "ro")
-# plt.legend(loc="lower right", fontsize=16)
-# plt.grid(True)
-# plt.axis([0, 1, 0, 1])
-# plt.show()
+plt.plot([fpr_precision_90, fpr_precision_90], [0., precision_90_recall], "r:")
+plt.plot([0., fpr_precision_90], [precision_90_recall, precision_90_recall], "r:")
+plt.plot([fpr_precision_90, fpr_precision_90], [0., tpr_forest_90], "r:")
+plt.plot([fpr_precision_90], [precision_90_recall], "ro")
+plt.plot([fpr_precision_90], [tpr_forest_90], "ro")
+plt.legend(loc="lower right", fontsize=16)
+plt.grid(True)
+plt.axis([0, 1, 0, 1])
+plt.show()
 
 # 计算auc、召回率和精度
-# auc = roc_auc_score(y_train_5, y_score_forest)
-# print(auc)
-#
-# predict_forest = cross_val_predict(forest_fcl, X_train, y_train_5, cv=3)
-# print(predict_forest)
-# recall_forest = recall_score(y_train_5, predict_forest)
-# print(recall_forest)
-#
-# precision_forest = precision_score(y_train_5, predict_forest)
-# print(precision_forest)
+auc = roc_auc_score(y_train_5, y_score_forest)
+print(auc)
+
+predict_forest = cross_val_predict(forest_fcl, X_train, y_train_5, cv=3)
+print(predict_forest)
+recall_forest = recall_score(y_train_5, predict_forest)
+print(recall_forest)
+
+precision_forest = precision_score(y_train_5, predict_forest)
+print(precision_forest)
 
 # 多类分类器
-# svm_clf = SVC(gamma="auto", random_state=42)
-# svm_clf.fit(X[:1000], y_train[:1000])
-# svm_predict = svm_clf.predict([one_digit])
-# # print(svm_predict)
-#
-# svm_dec = svm_clf.decision_function([one_digit])
-# print(svm_dec)
-#
-# print(svm_clf.classes_)
-#
-# print(svm_clf.classes_[7])
+svm_clf = SVC(gamma="auto", random_state=42)
+svm_clf.fit(X[:1000], y_train[:1000])
+svm_predict = svm_clf.predict([one_digit])
+# print(svm_predict)
+
+svm_dec = svm_clf.decision_function([one_digit])
+print(svm_dec)
+
+print(svm_clf.classes_)
+
+print(svm_clf.classes_[7])
 
 # 训练一个一对剩余的模型
-# ovr_clf = OneVsRestClassifier(SVC(gamma="auto", random_state=42))
-# ovr_clf.fit(X[:1000], y_train[:1000])
-# ovr_predict = ovr_clf.predict([one_digit])
-# print(ovr_predict)
+ovr_clf = OneVsRestClassifier(SVC(gamma="auto", random_state=42))
+ovr_clf.fit(X[:1000], y_train[:1000])
+ovr_predict = ovr_clf.predict([one_digit])
+print(ovr_predict)
 
-# sgd_clf = SGDClassifier(random_state=42)
-# sgd_clf.fit(X[:1000], y_train[:1000])
-# sgd_predict = sgd_clf.predict([one_digit])
-# print(sgd_predict)
+sgd_clf = SGDClassifier(random_state=42)
+sgd_clf.fit(X[:1000], y_train[:1000])
+sgd_predict = sgd_clf.predict([one_digit])
+print(sgd_predict)
 
-# random_forest_clf = RandomForestClassifier(random_state=42)
-# random_forest_clf.fit(X[:1000], y_train[:1000])
-# random_forest_predict = random_forest_clf.predict([one_digit])
-# print(random_forest_predict)
+random_forest_clf = RandomForestClassifier(random_state=42)
+random_forest_clf.fit(X[:1000], y_train[:1000])
+random_forest_predict = random_forest_clf.predict([one_digit])
+print(random_forest_predict)
 
 # 验证归一化是否能够提高准确度
-# sgd_score = cross_val_score(sgd_clf, X_train, y_train, cv=3, scoring="accuracy")
-# print(sgd_score)
-# scaler = StandardScaler()
-# X_train_scaled = scaler.fit_transform(X_train.astype(np.float64))
-# sgd_scaled_score = cross_val_score(sgd_clf, X_train_scaled, y_train, cv=3)
-# print(sgd_scaled_score)
+sgd_score = cross_val_score(sgd_clf, X_train, y_train, cv=3, scoring="accuracy")
+print(sgd_score)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train.astype(np.float64))
+sgd_scaled_score = cross_val_score(sgd_clf, X_train_scaled, y_train, cv=3)
+print(sgd_scaled_score)
 
 # 错误分析
 # 混淆矩阵
-# sgd_clf = SGDClassifier(random_state=42)
-# y_train_predict = cross_val_predict(sgd_clf, X_train, y_train, cv=3)
-# sgd_cm = confusion_matrix(y_train, y_train_predict)
+sgd_clf = SGDClassifier(random_state=42)
+y_train_predict = cross_val_predict(sgd_clf, X_train, y_train, cv=3)
+sgd_cm = confusion_matrix(y_train, y_train_predict)
 
-# def show_confusion_matrix(matrix):
-#     """
-#     手动绘制混淆矩阵
-#     :param matrix:
-#     :return:
-#     """
-#     fig = plt.figure(figsize=(8, 6))
-#     ax = fig.add_subplot(111)
-#     cax = ax.matshow(matrix)
-#     fig.colorbar(cax)
-#
-#
-# show_confusion_matrix(sdg_cm)
-# plt.show()
+def show_confusion_matrix(matrix):
+    """
+    手动绘制混淆矩阵
+    :param matrix:
+    :return:
+    """
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(matrix)
+    fig.colorbar(cax)
+
+
+show_confusion_matrix(sdg_cm)
+plt.show()
 
 # sklearn绘制混淆矩阵
-# plt.matshow(sgd_cm, cmap=plt.cm.gray)
-# plt.show()
+plt.matshow(sgd_cm, cmap=plt.cm.gray)
+plt.show()
 
 # 计算每一类图片的数量
-# row_nums = sgd_cm.sum(axis=1, keepdims=True)
+row_nums = sgd_cm.sum(axis=1, keepdims=True)
 # 考虑每个数字的图片数量不同，考虑到数据的准确性需要对混淆矩阵的数值除以他的数量
-# norm_sgd_cm = sgd_cm / row_nums
+norm_sgd_cm = sgd_cm / row_nums
 # 用0填充对角线
-# np.fill_diagonal(norm_sgd_cm, 0)
-# plt.matshow(norm_sgd_cm, cmap=plt.cm.gray)
-# plt.show()
+np.fill_diagonal(norm_sgd_cm, 0)
+plt.matshow(norm_sgd_cm, cmap=plt.cm.gray)
+plt.show()
 
 # 检查3和5的混淆
-# num_3, num_5 = 3, 5
-# X_33 = X_train[(y_train == num_3) & (y_train_predict == num_3)]
-# X_35 = X_train[(y_train == num_3) & (y_train_predict == num_5)]
-# X_53 = X_train[(y_train == num_5) & (y_train_predict == num_3)]
-# X_55 = X_train[(y_train == num_5) & (y_train_predict == num_5)]
+num_3, num_5 = 3, 5
+X_33 = X_train[(y_train == num_3) & (y_train_predict == num_3)]
+X_35 = X_train[(y_train == num_3) & (y_train_predict == num_5)]
+X_53 = X_train[(y_train == num_5) & (y_train_predict == num_3)]
+X_55 = X_train[(y_train == num_5) & (y_train_predict == num_5)]
 
 # 绘制3和5的错误分类图，左上角为是正确分类为3的，右上角为错误分类为3的
 # 左下角为错误分类为5的3的图片，右下角为正确分类为5的图片
-# plt.figure(figsize=(8, 8))
-# plt.subplot(221)
-# show_digit(X_33[:25], num_per_row=5)
-# plt.subplot(222)
-# show_digit(X_35[:25], num_per_row=5)
-# plt.subplot(223)
-# show_digit(X_53[:25], num_per_row=5)
-# plt.subplot(224)
-# show_digit(X_55[:25], num_per_row=5)
-# plt.show()
+plt.figure(figsize=(8, 8))
+plt.subplot(221)
+show_digit(X_33[:25], num_per_row=5)
+plt.subplot(222)
+show_digit(X_35[:25], num_per_row=5)
+plt.subplot(223)
+show_digit(X_53[:25], num_per_row=5)
+plt.subplot(224)
+show_digit(X_55[:25], num_per_row=5)
+plt.show()
 
 
 # 多标签分类
-# y_train_large = (y_train >= 7)
-# y_train_even = (y_train % 2 == 0)
-# y_train_large_odd = np.c_[y_train_large, y_train_even]
-# # 使用K临近算法训练模型
-# knn_clf = KNeighborsClassifier()
-# knn_clf.fit(X_train, y_train_large_odd)
-# knn_predict = knn_clf.predict([one_digit])
-# print(knn_predict)
+y_train_large = (y_train >= 7)
+y_train_even = (y_train % 2 == 0)
+y_train_large_odd = np.c_[y_train_large, y_train_even]
+# 使用K临近算法训练模型
+knn_clf = KNeighborsClassifier()
+knn_clf.fit(X_train, y_train_large_odd)
+knn_predict = knn_clf.predict([one_digit])
+print(knn_predict)
 
 
 # 多输出分类
 # 对图片添加噪音
-# noise = np.random.randint(0, 100, (len(X_train), 784))
-# X_train_noise = X_train + noise
-# noise = np.random.randint(0, 100, (len(X_test), 784))
-# X_test_noise = X_test + noise
-# y_train_noise = X_train
+noise = np.random.randint(0, 100, (len(X_train), 784))
+X_train_noise = X_train + noise
+noise = np.random.randint(0, 100, (len(X_test), 784))
+X_test_noise = X_test + noise
+y_train_noise = X_train
 
 
 # 显示添加噪音和不添加噪音的区别
-# plt.figure(figsize=(8, 4))
-# plt.subplot(121)
-# show_img(X_test[0])
-# plt.subplot(122)
-# show_img(X_test_noise[0])
-# plt.show()
+plt.figure(figsize=(8, 4))
+plt.subplot(121)
+show_img(X_test[0])
+plt.subplot(122)
+show_img(X_test_noise[0])
+plt.show()
 
-# knn_clf = KNeighborsClassifier()
-# knn_clf.fit(X_train_noise, y_train_noise)
-# clean_digit = knn_clf.predict([X_test_noise[0]])
-# show_img(clean_digit)
-# plt.show()
+knn_clf = KNeighborsClassifier()
+knn_clf.fit(X_train_noise, y_train_noise)
+clean_digit = knn_clf.predict([X_test_noise[0]])
+show_img(clean_digit)
+plt.show()
 
 
 # 课后练习
@@ -448,17 +450,17 @@ one_digit = X[0]
 # 要找到合适的超参数值即可（试试对weights和n_neighbors这两个超
 # 参数进行网格搜索）。
 # 构建网格参数
-# grid_param = [{"weights": ["uniform", "distance"], "n_neighbors": [3, 4, 5]}]
+grid_param = [{"weights": ["uniform", "distance"], "n_neighbors": [3, 4, 5]}]
 # 开始网格搜索
-# knn_clf = KNeighborsClassifier()
-# grid_cv = GridSearchCV(knn_clf, grid_param, cv=5, verbose=3)
-# grid_cv.fit(X_train, y_train)
-#
-# print(grid_cv.best_estimator_)
-# print(grid_cv.best_score_)
-# knn_test_predict = grid_cv.predict(X_test)
-# knn_score = accuracy_score(y_test, knn_test_predict)
-# print(knn_score)
+knn_clf = KNeighborsClassifier()
+grid_cv = GridSearchCV(knn_clf, grid_param, cv=5, verbose=3)
+grid_cv.fit(X_train, y_train)
+
+print(grid_cv.best_estimator_)
+print(grid_cv.best_score_)
+knn_test_predict = grid_cv.predict(X_test)
+knn_score = accuracy_score(y_test, knn_test_predict)
+print(knn_score)
 
 
 # 2、写一个可以将MNIST图片向任意方向（上、下、左、右）移动一
@@ -469,71 +471,71 @@ one_digit = X[0]
 # 练集扩展。
 
 # 设置图片偏移
-# def shift_image(image, dx, dy):
-#     image = image.reshape(28, 28)
-#     shifted_image = shift(image, [dx, dy], cval=0)
-#     return shifted_image.reshape([-1])
+def shift_image(image, dx, dy):
+    image = image.reshape(28, 28)
+    shifted_image = shift(image, [dx, dy], cval=0)
+    return shifted_image.reshape([-1])
 
-# shifted_image_down = shift_image(one_digit, -5, 0)
-# plt.figure(figsize=(8, 4))
-# plt.subplot(121)
-# plt.title("Original", fontsize=16)
-# plt.imshow(one_digit.reshape(28, 28), interpolation="nearest", cmap="Greys")
-# plt.subplot(122)
-# plt.title("Shift", fontsize=16)
-# plt.imshow(shifted_image_down.reshape(28, 28), interpolation="nearest", cmap="Greys")
-# plt.show()
+shifted_image_down = shift_image(one_digit, -5, 0)
+plt.figure(figsize=(8, 4))
+plt.subplot(121)
+plt.title("Original", fontsize=16)
+plt.imshow(one_digit.reshape(28, 28), interpolation="nearest", cmap="Greys")
+plt.subplot(122)
+plt.title("Shift", fontsize=16)
+plt.imshow(shifted_image_down.reshape(28, 28), interpolation="nearest", cmap="Greys")
+plt.show()
 
 # 循环偏移图片
-# X_train_augmented = [image for image in X_train]
-# y_train_augmented = [image for image in y_train]
-#
-# for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-#     for image, label in zip(X_train, y_train):
-#         X_train_augmented.append(shift_image(image, dx, dy))
-#         y_train_augmented.append(label)
-#
-# X_train_augmented = np.array(X_train_augmented)
-# y_train_augmented = np.array(y_train_augmented)
+X_train_augmented = [image for image in X_train]
+y_train_augmented = [image for image in y_train]
+
+for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+    for image, label in zip(X_train, y_train):
+        X_train_augmented.append(shift_image(image, dx, dy))
+        y_train_augmented.append(label)
+
+X_train_augmented = np.array(X_train_augmented)
+y_train_augmented = np.array(y_train_augmented)
 
 # 打乱顺序
-# per_index = np.random.permutation(len(X_train_augmented))
-# X_train_augmented = X_train_augmented[per_index]
-# y_train_augmented = y_train_augmented[per_index]
+per_index = np.random.permutation(len(X_train_augmented))
+X_train_augmented = X_train_augmented[per_index]
+y_train_augmented = y_train_augmented[per_index]
 
 # 训练模型
-# knn_clf = KNeighborsClassifier(n_neighbors=4, weights='distance')
-# knn_clf.fit(X_train_augmented, y_train_augmented)
-# knn_augmented_predict = knn_clf.predict(X_test)
-# knn_augmented_score = accuracy_score(y_test, knn_augmented_predict)
-# print(knn_augmented_score)
+knn_clf = KNeighborsClassifier(n_neighbors=4, weights='distance')
+knn_clf.fit(X_train_augmented, y_train_augmented)
+knn_augmented_predict = knn_clf.predict(X_test)
+knn_augmented_score = accuracy_score(y_test, knn_augmented_predict)
+print(knn_augmented_score)
 
 # 3、Kaggle上非常棒的起点：处理泰坦尼克（Titanic）数据集。
 # 有示例
 
 # 4、创建一个垃圾邮件分类器
 # 下载数据
-# ssl._create_default_https_context = ssl._create_unverified_context
-# root_path = "http://spamassassin.apache.org/old/publiccorpus/"
-# ham_url = root_path + "20030228_easy_ham.tar.bz2"
-# spam_url = root_path + "20030228_spam.tar.bz2"
+ssl._create_default_https_context = ssl._create_unverified_context
+root_path = "http://spamassassin.apache.org/old/publiccorpus/"
+ham_url = root_path + "20030228_easy_ham.tar.bz2"
+spam_url = root_path + "20030228_spam.tar.bz2"
 save_path = "data"
 
-# def download_data(ham=ham_url, spam=spam_url, save=save_path):
-#     if not os.path.isdir(save):
-#         os.makedirs(save)
-#     for file_name, file_url in (("ham.tar.bz2", ham), ("spam.tar.bz2", spam)):
-#         path = os.path.join(save, file_name)
-#         if not os.path.isfile(path):
-#             urllib.request.urlretrieve(file_url, path)
-#
-#         # 解压
-#         tar_file = tarfile.open(path)
-#         tar_file.extractall(save)
-#         tar_file.close()
-#
-#
-# download_data()
+def download_data(ham=ham_url, spam=spam_url, save=save_path):
+    if not os.path.isdir(save):
+        os.makedirs(save)
+    for file_name, file_url in (("ham.tar.bz2", ham), ("spam.tar.bz2", spam)):
+        path = os.path.join(save, file_name)
+        if not os.path.isfile(path):
+            urllib.request.urlretrieve(file_url, path)
+
+        # 解压
+        tar_file = tarfile.open(path)
+        tar_file.extractall(save)
+        tar_file.close()
+
+
+download_data()
 
 # 加载数据
 easy_ham_path = os.path.join(save_path, "easy_ham")
