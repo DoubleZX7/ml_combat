@@ -1,1 +1,1 @@
-print(float("inf"))
+print("测试提交git")
