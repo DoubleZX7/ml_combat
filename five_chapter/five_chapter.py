@@ -54,6 +54,7 @@ def show_svc_decision_boundary(model, x_min, x_max):
     y_down = k * x0 + b
     print(y_up)
     print(y_down)
+    print(decision_boundary)
 
 
 show_svc_decision_boundary(svm_clf, 0, 5.5)
