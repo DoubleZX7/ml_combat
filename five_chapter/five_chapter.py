@@ -15,3 +15,7 @@ y = y[setosa_or_versicolor]
 
 svm_clf = SVC(kernel="linear", C=float("inf"))
 svm_clf.fit(X, y)
+
+print(svm_clf.coef_[0])
+print(svm_clf.intercept_[0])
+print(svm_clf.support_vectors_)
