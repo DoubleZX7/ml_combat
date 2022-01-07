@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 from sklearn import datasets
 from sklearn.svm import SVC
@@ -52,9 +53,14 @@ def show_svc_decision_boundary(model, x_min, x_max):
     support_vectors = sv[0]
     b = support_vectors[1] - support_vectors[0] * k
     y_down = k * x0 + b
-    print(y_up)
-    print(y_down)
-    print(decision_boundary)
+
+    # 开始绘画
+    # 两个支持向量使用散点图
+    plt.scatter(sv[:, 0], sv[:, 1], s=180, facecolors="#FFAAAA")
+    # 三条线
+    plt.plot(x0, decision_boundary, "k-", linewidth="2")
+    plt.plot(x0, y_up, "k--", linewidth="2")
+    plt.plot(x0, y_down, "k--", linewidth="2")
 
 
 show_svc_decision_boundary(svm_clf, 0, 5.5)
