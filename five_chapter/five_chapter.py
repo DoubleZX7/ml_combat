@@ -175,61 +175,80 @@ y = (iris["target"] == 2).astype(np.int32)
 
 # 比较超参数C值不同的SVM模型
 # 训练两个模型超参数C值不同
-sca = StandardScaler()
-svm_clf_1 = LinearSVC(C=1, loss="hinge", random_state=42)
-svm_clf_2 = LinearSVC(C=100, loss="hinge", random_state=42)
+# sca = StandardScaler()
+# svm_clf_1 = LinearSVC(C=1, loss="hinge", random_state=42)
+# svm_clf_2 = LinearSVC(C=100, loss="hinge", random_state=42)
 # svm_clf_1 = SVC(kernel="linear", C=1)
 # svm_clf_2 = SVC(kernel="linear", C=float("inf"))
-svm_clf_2.fit(X, y)
-sca_svm_clf_1 = Pipeline([
-    ("sca", sca),
-    ("linear_svc", svm_clf_1)
-])
+# svm_clf_2.fit(X, y)
+# sca_svm_clf_1 = Pipeline([
+#     ("sca", sca),
+#     ("linear_svc", svm_clf_1)
+# ])
+#
+# sca_svm_clf_2 = Pipeline([
+#     ("sca", sca),
+#     ("linear_svc", svm_clf_2)
+# ])
+#
+# sca_svm_clf_1.fit(X, y)
+# sca_svm_clf_2.fit(X, y)
+#
+# # 由于LinearSVC没有支持向量，所以需要自己计算支持向量
+# b1 = svm_clf_1.decision_function([-sca.mean_ / sca.scale_])
+# b2 = svm_clf_2.decision_function([-sca.mean_ / sca.scale_])
+# w1 = svm_clf_1.coef_[0] / sca.scale_
+# w2 = svm_clf_2.coef_[0] / sca.scale_
+# svm_clf_1.intercept_ = np.array([b1])
+# svm_clf_2.intercept_ = np.array([b2])
+# svm_clf_1.coef_ = np.array([w1])
+# svm_clf_2.coef_ = np.array([w2])
+#
+# t = y * 2 - 1
+# support_vectors_idx1 = (t * (X.dot(w1) + b1) < 1).ravel()
+# support_vectors_idx2 = (t * (X.dot(w2) + b2) < 1).ravel()
+# svm_clf_1.support_vectors_ = X[support_vectors_idx1]
+# svm_clf_2.support_vectors_ = X[support_vectors_idx2]
+#
+# # 绘画两个不通超参数的图
+# fig = plt.figure(figsize=(13, 3))
+# fig.add_subplot(121)
+# show_svc_decision_boundary(svm_clf_1, 4, 6)
+# plt.plot(X[:, 0][y == 1], X[:, 1][y == 1], "g^", label="Iris virginica")
+# plt.plot(X[:, 0][y == 0], X[:, 1][y == 0], "bs", label="Iris versicolor")
+# plt.legend(loc="upper left", fontsize=14)
+# plt.xlabel("Patel length", fontsize=14)
+# plt.ylabel("Patel width", fontsize=14)
+# plt.grid(True)
+# plt.title(f"C= {svm_clf_1.C}")
+# plt.axis([4, 6, 0.8, 2.8])
+#
+#
+# fig.add_subplot(122)
+# show_svc_decision_boundary(svm_clf_2, 4, 6)
+# plt.plot(X[:, 0][y == 1], X[:, 1][y == 1], "g^")
+# plt.plot(X[:, 0][y == 0], X[:, 1][y == 0], "bs")
+# plt.xlabel("Patel length", fontsize=14)
+# plt.grid(True)
+# plt.title(f"C= {svm_clf_2.C}")
+# plt.axis([4, 6, 0.8, 2.8])
+# plt.show()
 
-sca_svm_clf_2 = Pipeline([
-    ("sca", sca),
-    ("linear_svc", svm_clf_2)
-])
 
-sca_svm_clf_1.fit(X, y)
-sca_svm_clf_2.fit(X, y)
+# 非线性支持向量机
+X1D = np.linspace(-4, 4, 9).reshape(-1, 1)
+X2D = np.c_[X1D, X1D**2]
+y = np.array([0, 0, 1, 1, 1, 1, 1, 0, 0])
 
-# 由于LinearSVC没有支持向量，所以需要自己计算支持向量
-b1 = svm_clf_1.decision_function([-sca.mean_ / sca.scale_])
-b2 = svm_clf_2.decision_function([-sca.mean_ / sca.scale_])
-w1 = svm_clf_1.coef_[0] / sca.scale_
-w2 = svm_clf_2.coef_[0] / sca.scale_
-svm_clf_1.intercept_ = np.array([b1])
-svm_clf_2.intercept_ = np.array([b2])
-svm_clf_1.coef_ = np.array([w1])
-svm_clf_2.coef_ = np.array([w2])
-
-t = y * 2 - 1
-support_vectors_idx1 = (t * (X.dot(w1) + b1) < 1).ravel()
-support_vectors_idx2 = (t * (X.dot(w2) + b2) < 1).ravel()
-svm_clf_1.support_vectors_ = X[support_vectors_idx1]
-svm_clf_2.support_vectors_ = X[support_vectors_idx2]
-
-# 绘画两个不通超参数的图
-fig = plt.figure(figsize=(13, 3))
+# 绘画第一个线性不可分的数据
+fig = plt.figure(figsize=(10, 3))
 fig.add_subplot(121)
-show_svc_decision_boundary(svm_clf_1, 4, 6)
-plt.plot(X[:, 0][y == 1], X[:, 1][y == 1], "g^", label="Iris virginica")
-plt.plot(X[:, 0][y == 0], X[:, 1][y == 0], "bs", label="Iris versicolor")
-plt.legend(loc="upper left", fontsize=14)
-plt.xlabel("Patel length", fontsize=14)
-plt.ylabel("Patel width", fontsize=14)
-plt.grid(True)
-plt.title(f"C= {svm_clf_1.C}")
-plt.axis([4, 6, 0.8, 2.8])
-
-
-fig.add_subplot(122)
-show_svc_decision_boundary(svm_clf_2, 4, 6)
-plt.plot(X[:, 0][y == 1], X[:, 1][y == 1], "g^")
-plt.plot(X[:, 0][y == 0], X[:, 1][y == 0], "bs")
-plt.xlabel("Patel length", fontsize=14)
-plt.grid(True)
-plt.title(f"C= {svm_clf_2.C}")
-plt.axis([4, 6, 0.8, 2.8])
+plt.grid(True, which="both")
+plt.axhline(y=0, color="k")
+plt.plot(X1D[:, 0][y == 0], np.zeros(4), "bs")
+plt.plot(X1D[:, 0][y == 1], np.zeros(5), "g^")
+plt.gca().get_yaxis().set_ticks([])
+plt.xlabel(r"$x_1$", fontsize=20)
+plt.axis([-4.5, 4.5, -0.2, 0.2])
 plt.show()
+
