@@ -214,6 +214,7 @@ plt.plot([precision_90_threshold], [0.9], "ro")
 plt.plot([precision_90_threshold], [precision_90_recall], "ro")
 plt.show()
 
+
 # print((y_train_pred == (y_score > 0)).all())
 
 
@@ -360,6 +361,7 @@ sgd_clf = SGDClassifier(random_state=42)
 y_train_predict = cross_val_predict(sgd_clf, X_train, y_train, cv=3)
 sgd_cm = confusion_matrix(y_train, y_train_predict)
 
+
 def show_confusion_matrix(matrix):
     """
     手动绘制混淆矩阵
@@ -419,7 +421,6 @@ knn_clf.fit(X_train, y_train_large_odd)
 knn_predict = knn_clf.predict([one_digit])
 print(knn_predict)
 
-
 # 多输出分类
 # 对图片添加噪音
 noise = np.random.randint(0, 100, (len(X_train), 784))
@@ -427,7 +428,6 @@ X_train_noise = X_train + noise
 noise = np.random.randint(0, 100, (len(X_test), 784))
 X_test_noise = X_test + noise
 y_train_noise = X_train
-
 
 # 显示添加噪音和不添加噪音的区别
 plt.figure(figsize=(8, 4))
@@ -442,7 +442,6 @@ knn_clf.fit(X_train_noise, y_train_noise)
 clean_digit = knn_clf.predict([X_test_noise[0]])
 show_img(clean_digit)
 plt.show()
-
 
 # 课后练习
 # 1、为MNIST数据集构建一个分类器，并在测试集上达成超过97%的
@@ -475,6 +474,7 @@ def shift_image(image, dx, dy):
     image = image.reshape(28, 28)
     shifted_image = shift(image, [dx, dy], cval=0)
     return shifted_image.reshape([-1])
+
 
 shifted_image_down = shift_image(one_digit, -5, 0)
 plt.figure(figsize=(8, 4))
@@ -520,6 +520,7 @@ root_path = "http://spamassassin.apache.org/old/publiccorpus/"
 ham_url = root_path + "20030228_easy_ham.tar.bz2"
 spam_url = root_path + "20030228_spam.tar.bz2"
 save_path = "data"
+
 
 def download_data(ham=ham_url, spam=spam_url, save=save_path):
     if not os.path.isdir(save):
