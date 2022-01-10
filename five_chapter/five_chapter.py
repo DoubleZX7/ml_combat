@@ -250,5 +250,18 @@ plt.plot(X1D[:, 0][y == 1], np.zeros(5), "g^")
 plt.gca().get_yaxis().set_ticks([])
 plt.xlabel(r"$x_1$", fontsize=20)
 plt.axis([-4.5, 4.5, -0.2, 0.2])
+
+# 绘制第二个线性可分的数据图
+fig.add_subplot(122)
+plt.grid(True, which="both")
+plt.axhline(y=0, color="k")
+plt.axvline(x=0, color="k")
+plt.plot(X2D[:, 0][y == 0], X2D[:, 1][y == 0], "bs")
+plt.plot(X2D[:, 0][y == 1], X2D[:, 1][y == 1], "y^")
+plt.xlabel(r"$x_1$", fontsize=14)
+plt.ylabel(r"$x_2$  ", fontsize=14, rotation=0)
+plt.gca().get_yaxis().set_ticks([0, 4, 8, 12, 16])
+plt.plot([-4.5, 4.5], [6.5, 6.5], "r--", linewidth=3)
+plt.axis([-4.5, 4.5, -1, 17])
 plt.show()
 
