@@ -3,11 +3,13 @@ import matplotlib.pyplot as plt
 
 from sklearn import datasets
 from sklearn.svm import SVC, LinearSVC
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
 
 # 生成文章中的第一个图大间隔的分类
 iris = datasets.load_iris()
+
+
 # X = iris["data"][:, (2, 3)]
 # y = iris["target"]
 #
@@ -236,32 +238,58 @@ y = (iris["target"] == 2).astype(np.int32)
 
 
 # 非线性支持向量机
-X1D = np.linspace(-4, 4, 9).reshape(-1, 1)
-X2D = np.c_[X1D, X1D**2]
-y = np.array([0, 0, 1, 1, 1, 1, 1, 0, 0])
+# X1D = np.linspace(-4, 4, 9).reshape(-1, 1)
+# X2D = np.c_[X1D, X1D**2]
+# y = np.array([0, 0, 1, 1, 1, 1, 1, 0, 0])
+#
+# # 绘画第一个线性不可分的数据
+# fig = plt.figure(figsize=(10, 3))
+# fig.add_subplot(121)
+# plt.grid(True, which="both")
+# plt.axhline(y=0, color="k")
+# plt.plot(X1D[:, 0][y == 0], np.zeros(4), "bs")
+# plt.plot(X1D[:, 0][y == 1], np.zeros(5), "g^")
+# plt.gca().get_yaxis().set_ticks([])
+# plt.xlabel(r"$x_1$", fontsize=20)
+# plt.axis([-4.5, 4.5, -0.2, 0.2])
+#
+# # 绘制第二个线性可分的数据图
+# fig.add_subplot(122)
+# plt.grid(True, which="both")
+# plt.axhline(y=0, color="k")
+# plt.axvline(x=0, color="k")
+# plt.plot(X2D[:, 0][y == 0], X2D[:, 1][y == 0], "bs")
+# plt.plot(X2D[:, 0][y == 1], X2D[:, 1][y == 1], "y^")
+# plt.xlabel(r"$x_1$", fontsize=14)
+# plt.ylabel(r"$x_2$  ", fontsize=14, rotation=0)
+# plt.gca().get_yaxis().set_ticks([0, 4, 8, 12, 16])
+# plt.plot([-4.5, 4.5], [6.5, 6.5], "r--", linewidth=3)
+# plt.axis([-4.5, 4.5, -1, 17])
+# plt.show()
 
-# 绘画第一个线性不可分的数据
-fig = plt.figure(figsize=(10, 3))
-fig.add_subplot(121)
-plt.grid(True, which="both")
-plt.axhline(y=0, color="k")
-plt.plot(X1D[:, 0][y == 0], np.zeros(4), "bs")
-plt.plot(X1D[:, 0][y == 1], np.zeros(5), "g^")
-plt.gca().get_yaxis().set_ticks([])
-plt.xlabel(r"$x_1$", fontsize=20)
-plt.axis([-4.5, 4.5, -0.2, 0.2])
+#  分类非线性的卫星数据集
+X, y = datasets.make_moons(n_samples=100, noise=0.15, random_state=42)
 
-# 绘制第二个线性可分的数据图
-fig.add_subplot(122)
-plt.grid(True, which="both")
-plt.axhline(y=0, color="k")
-plt.axvline(x=0, color="k")
-plt.plot(X2D[:, 0][y == 0], X2D[:, 1][y == 0], "bs")
-plt.plot(X2D[:, 0][y == 1], X2D[:, 1][y == 1], "y^")
-plt.xlabel(r"$x_1$", fontsize=14)
-plt.ylabel(r"$x_2$  ", fontsize=14, rotation=0)
-plt.gca().get_yaxis().set_ticks([0, 4, 8, 12, 16])
-plt.plot([-4.5, 4.5], [6.5, 6.5], "r--", linewidth=3)
-plt.axis([-4.5, 4.5, -1, 17])
+
+def show_datasets(X, y, axis):
+    plt.plot(X[:, 0][y == 0], X[:, 1][y == 0], "bs")
+    plt.plot(X[:, 0][y == 1], X[:, 1][y == 1], "y^")
+    plt.axis(axis)
+    plt.grid(True, which="both")
+    plt.xlabel(r"$x_1$", fontsize=14)
+    plt.ylabel(r"$x_2$", fontsize=14, rotation=0)
+
+
+show_datasets(X, y, [-1.5, 2.5, -1, 1.5])
 plt.show()
+
+# 文中的第二段示例代码用管道制作一个包括多项式归一化的SVM模型
+polynomial_svm_clf = Pipeline([
+    ("pl", PolynomialFeatures(degree=3)),
+    ("sac", StandardScaler()),
+    ("svm_clf", LinearSVC(random_state=42, C=10, loss="hinge"))
+])
+polynomial_svm_clf.fit(X, y)
+
+
 
