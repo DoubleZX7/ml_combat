@@ -1,10 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from scipy.io import loadmat
 from sklearn import datasets
-from sklearn.svm import SVC, LinearSVC
+from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.svm import SVC, LinearSVC, LinearSVR, SVR
+from sklearn.linear_model import SGDClassifier
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.pipeline import Pipeline
+from sklearn.model_selection import RandomizedSearchCV, train_test_split
+from scipy.stats import reciprocal, uniform
 
 # 生成文章中的第一个图大间隔的分类
 iris = datasets.load_iris()
@@ -280,16 +285,410 @@ def show_datasets(X, y, axis):
     plt.ylabel(r"$x_2$", fontsize=14, rotation=0)
 
 
-show_datasets(X, y, [-1.5, 2.5, -1, 1.5])
-plt.show()
+# show_datasets(X, y, [-1.5, 2.5, -1, 1.5])
+# plt.show()
 
 # 文中的第二段示例代码用管道制作一个包括多项式归一化的SVM模型
-polynomial_svm_clf = Pipeline([
-    ("pl", PolynomialFeatures(degree=3)),
-    ("sac", StandardScaler()),
-    ("svm_clf", LinearSVC(random_state=42, C=10, loss="hinge"))
-])
-polynomial_svm_clf.fit(X, y)
+# polynomial_svm_clf = Pipeline([
+#     ("pl", PolynomialFeatures(degree=3)),
+#     ("sac", StandardScaler()),
+#     ("svm_clf", LinearSVC(random_state=42, C=10, loss="hinge"))
+# ])
+# polynomial_svm_clf.fit(X, y)
 
 
+# 绘制非线性模型的预测图
+def show_pred(clf, axis):
+    x0s = np.linspace(axis[0], axis[1], 100)
+    x1s = np.linspace(axis[1], axis[2], 100)
+    x0, x1 = np.meshgrid(x0s, x1s)
+    X = np.c_[x0.ravel(), x1.ravel()]
+    y_pred = clf.predict(X).reshape(x0.shape)
+    y_decision = clf.decision_function(X).reshape(x0.shape)
+    plt.contourf(x0, x1, y_pred, cmap=plt.cm.brg, alpha=0.2)
+    plt.contourf(x0, x1, y_decision, cmap=plt.cm.brg, alpha=0.1)
 
+
+# show_pred(polynomial_svm_clf, [-1.5, 2.5, -1, 1.5])
+# show_datasets(X, y, [-1.5, 2.5, -1, 1.5])
+# plt.show()
+
+# 比较超参数不同的模型
+# 训练两个不同超参数的SVM模型
+# poly_svm_clf = Pipeline([
+#     ("sca", StandardScaler()),
+#     ("svm", SVC(kernel="poly", C=5, degree=3, coef0=1))
+# ])
+# poly_svm_clf.fit(X, y)
+#
+# poly_100_svm_clf = Pipeline([
+#     ("sca", StandardScaler()),
+#     ("svm", SVC(kernel="poly", C=5, degree=10, coef0=100))
+# ])
+# poly_100_svm_clf.fit(X, y)
+#
+# # 画两个超参数不同的模型
+# fig = plt.figure(figsize=(10, 3))
+# fig.add_subplot(121)
+# show_datasets(X, y, [-1.5, 2.4, -1, 1.5])
+# show_pred(poly_svm_clf, [-1.5, 2.4, -1, 1.5])
+# plt.title("d = 3, r = 1, C = 5", fontsize=18)
+#
+# fig.add_subplot(122)
+# show_datasets(X, y, [-1.5, 2.4, -1, 1.5])
+# show_pred(poly_100_svm_clf, [-1.5, 2.45, -1, 1.5])
+# plt.title("d = 10, r = 100, C = 5", fontsize=18)
+# plt.ylabel("")
+# plt.show()
+
+
+# 解决非线性的另外一个方法，添加相似特征
+def gaussian_rbf(x, landmark, gamma):
+    return np.exp(-gamma * np.linalg.norm(x - landmark, axis=1) ** 2)
+
+
+# gamma = 0.3
+# X1D = np.linspace(-4, 4, 9).reshape(-1, 1)
+#
+# x1s = np.linspace(-4.5, 4.5, 200).reshape(-1, 1)
+# x2s = gaussian_rbf(x1s, -2, gamma)
+# x3s = gaussian_rbf(x1s, 1, gamma)
+#
+# XK = np.c_[gaussian_rbf(X1D, -2, gamma), gaussian_rbf(X1D, 1, gamma)]
+# yk = np.array([0, 0, 1, 1, 1, 1, 1, 0, 0])
+#
+# # 绘制两个图
+# fig = plt.figure(figsize=(10, 3))
+# fig.add_subplot(121)
+# plt.grid(True, which="both")
+# plt.axhline(y=0, color="k")
+# plt.scatter([-2, 1], [0, 0], s=150, alpha=0.5, c="red")
+# plt.plot(X1D[:, 0][yk == 1], np.zeros(5), "y^")
+# plt.plot(X1D[:, 0][yk == 0], np.zeros(4), "bs")
+# # 绘制两条相似特征
+# plt.plot(x1s, x2s, "g--")
+# plt.plot(x1s, x3s, "b:")
+# plt.gca().get_yaxis().set_ticks([0, 0.25, 0.5, 0.75, 1])
+# plt.xlabel(r"$x_1$", fontsize=14)
+# plt.ylabel(r"Similarity", fontsize=14)
+# # 随机找一个X点
+# plt.annotate(r'$\mathbf{x}$',
+#              xy=(X1D[3, 0], 0),
+#              xytext=[-0.5, 0.2],
+#              ha="center",
+#              arrowprops=dict(facecolor='black', shrink=0.1),
+#              fontsize="14"
+#              )
+# plt.text(-2, 0.9, "$x_2$", ha="center", fontsize=18)
+# plt.text(1, 0.9, "$x_3$", ha="center", fontsize=18)
+# plt.axis([-4.5, 4.5, -0.1, 1.1])
+#
+#
+# fig.add_subplot(122)
+# plt.axhline(y=0, color="k")
+# plt.axvline(x=0, color="k")
+# plt.grid(True, which="both")
+# plt.plot(XK[:, 0][yk == 0], XK[:, 1][yk == 0], "bs")
+# plt.plot(XK[:, 0][yk == 1], XK[:, 1][yk == 1], "y^")
+# plt.xlabel("$x_2$", fontsize=14)
+# plt.ylabel("$x_3$", fontsize=14)
+# plt.annotate(r'$\phi\left(\mathbf{x}\right)$',
+#              xy=(XK[3, 0], XK[3, 1]),
+#              xytext=(0.65, 0.50),
+#              ha="center",
+#              arrowprops=dict(facecolor='black', shrink=0.1),
+#              fontsize="14"
+#              )
+# plt.plot([-0.1, 1.1], [0.57, -0.1], "r--", linewidth=3)
+# plt.axis([-0.1, 1.1, -0.1, 1.1])
+# plt.show()
+
+
+# 使用高斯径向基函数核做SVC的内核训练模型
+# svm_rbf_clf = Pipeline([
+#     ("sca", StandardScaler()),
+#     ("svm_clf", SVC(C=0.001, gamma=5, kernel="rbf"))
+# ])
+# svm_rbf_clf.fit(X, y)
+
+
+# 绘制不同超参数的不同模型
+# gamma1, gamma2 = 0.1, 5
+# C1, C2 = 0.001, 1000
+#
+# hyper_params = (gamma1, C1), (gamma1, C2), (gamma2, C1), (gamma2, C2)
+#
+# svm_clfs = []
+# for gamma, C in hyper_params:
+#     svm_rbf_clf = Pipeline([
+#         ("sca", StandardScaler()),
+#         ("svm_clf", SVC(C=C, gamma=gamma, kernel="rbf"))
+#     ])
+#     svm_rbf_clf.fit(X, y)
+#     svm_clfs.append(svm_rbf_clf)
+#
+# fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10, 7), sharex=True, sharey=True)
+#
+# for i, clf in enumerate(svm_clfs):
+#     plt.sca(axes[i // 2, i % 2])
+#     show_datasets(X, y, [-1.5, 2.45, -1, 1.5])
+#     show_pred(clf, [-1.5, 2.45, -1, 1.5])
+#     gamma, C = hyper_params[i]
+#     plt.title(f"gamma = {gamma}, C = {C}", fontsize=16)
+#     if i in (0, 1):
+#         plt.xlabel("")
+#     if i in (1, 3):
+#         plt.ylabel("")
+#
+# plt.show()
+
+
+# SVM回归
+# np.random.seed(42)
+# m = 50
+# X = 2 * np.random.rand(m, 1)
+# y = (4 + X ** 3 + np.random.rand(m, 1)).ravel()
+#
+# svm_reg = LinearSVR(epsilon=1.5, random_state=42)
+# svm_reg.fit(X, y)
+#
+# # 训练两个不同超参数的SVM回归模型
+# svm_reg_1 = LinearSVR(epsilon=1.5, random_state=42)
+# svm_reg_2 = LinearSVR(epsilon=0.5, random_state=42)
+# svm_reg_1.fit(X, y)
+# svm_reg_2.fit(X, y)
+
+
+def find_support_vectors(svm_reg, X, y):
+    """
+    寻找模型的支持向量
+    :param svm_reg:
+    :param X:
+    :param y:
+    :return:
+    """
+    y_pred = svm_reg.predict(X)
+    off_margin = (np.abs(y - y_pred) >= svm_reg.epsilon)
+    return np.argwhere(off_margin)
+
+
+# svm_reg_1.support_ = find_support_vectors(svm_reg_1, X, y)
+# svm_reg_2.support_ = find_support_vectors(svm_reg_2, X, y)
+#
+# eps_x1 = 1
+# eps_y_pred = svm_reg_1.predict([[eps_x1]])
+
+
+# print(svm_reg_1.predict())
+
+
+def show_svm_reg(reg, X, y, axis):
+    xls = np.linspace(axis[0], axis[1], 100).reshape(100, 1)
+    y_pre = reg.predict(xls)
+    plt.plot(xls, y_pre, "k", linewidth=2, label=r"$\hat{y}$")
+    plt.plot(xls, y_pre + reg.epsilon, "k--")
+    plt.plot(xls, y_pre - reg.epsilon, "k--")
+    plt.scatter(X[reg.support_], y[reg.support_], s=180, facecolors='#FFAAAA')
+    plt.plot(X, y, "bo")
+    plt.xlabel(r"$x_1$", fontsize=16)
+    plt.legend(loc="upper left", fontsize=16)
+    plt.axis(axis)
+
+
+# fig, axes = plt.subplots(ncols=2, figsize=(10, 3), sharey=True)
+# plt.sca(axes[0])
+# show_svm_reg(svm_reg_1, X, y, [0, 2, 3, 11])
+# plt.title(f"$\epsilon = {svm_reg_1.epsilon}$", fontsize=16)
+# plt.ylabel(r"$y$", fontsize=18, rotation=0)
+# plt.annotate(
+#     '', xy=(eps_x1, eps_y_pred), xycoords='data',
+#     xytext=(eps_x1, eps_y_pred - svm_reg_1.epsilon),
+#     textcoords='data', arrowprops={'arrowstyle': '<->', 'linewidth': 1.5}
+# )
+# plt.text(0.91, 5.6, r"$\epsilon$", fontsize=20)
+#
+# plt.sca(axes[1])
+# show_svm_reg(svm_reg_2, X, y, [0, 2, 3, 11])
+# plt.title(f"$\epsilon = {svm_reg_2.epsilon}$", fontsize=16)
+# plt.show()
+
+# 非线性SVM回归
+# np.random.seed(42)
+# m = 100
+# X = 2 * np.random.rand(m, 1) - 1
+# y = (0.2 + 0.1 * X + 0.5 * X**2 + np.random.randn(m, 1)/10).ravel()
+#
+# # 训练两个不同超参数的模型
+# svm_reg_1 = SVR(kernel="poly", C=100, degree=2, epsilon=0.1, gamma="scale")
+# svm_reg_2 = SVR(kernel="poly", C=0.01, degree=2, epsilon=0.1, gamma="scale")
+# svm_reg_1.fit(X, y)
+# svm_reg_2.fit(X, y)
+#
+# # 绘制两个SVM回归模型
+# fig, axes = plt.subplots(ncols=2, figsize=(10, 3), sharey=True)
+# plt.sca(axes[0])
+# show_svm_reg(svm_reg_1, X, y, [-1, 1, 0, 1])
+# plt.title(f"$degree=2, C=100, \epsilon = 0.1$")
+# plt.ylabel("$y_1$", fontsize=16)
+#
+# plt.sca(axes[1])
+# show_svm_reg(svm_reg_2, X, y, [-1, 1, 0, 1])
+# plt.title(f"$degree=2, C=0.01, \epsilon = 0.1$")
+# plt.show()
+
+
+# 课后练习
+# 8.在一个线性可分离数据集上训练LinearSVC。然后在同一数据集
+# 上训练SVC和SGDClassifier。看看你是否可以用它们产生大致相同的
+# 模型。
+# 寻找一个线性可分数据
+# iris = datasets.load_iris()
+# X = iris["data"][:, (2, 3)]
+# y = iris["target"]
+#
+# index = (y == 1) | (y == 0)
+# X = X[index]
+# y = y[index]
+#
+# # 训练三个模型
+# C = 5
+# alpha = 1 / (C * len(X))
+# line_clf = LinearSVC(C=C, loss="hinge", random_state=42)
+# sgd_clf = SGDClassifier(loss="hinge", learning_rate="constant", eta0=0.001, alpha=alpha, max_iter=1000, tol=1e-3,
+#                         random_state=42)
+# svc_clf = SVC(kernel="linear", C=C)
+#
+# # 归一化
+# sca = StandardScaler()
+# X_sca = sca.fit_transform(X)
+# # 拟合训练数据
+# line_clf.fit(X_sca, y)
+# sgd_clf.fit(X_sca, y)
+# svc_clf.fit(X_sca, y)
+#
+# # 计算斜率（k）与偏差（b）
+# k1 = -line_clf.coef_[0, 0] / line_clf.coef_[0, 1]
+# b1 = -line_clf.intercept_ / line_clf.coef_[0, 1]
+# k2 = -sgd_clf.coef_[0, 0] / sgd_clf.coef_[0, 1]
+# b2 = -sgd_clf.intercept_ / sgd_clf.coef_[0, 1]
+# k3 = -svc_clf.coef_[0, 0] / svc_clf.coef_[0, 1]
+# b3 = -svc_clf.intercept_ / svc_clf.coef_[0, 1]
+#
+# # 将归一化之后的数据转换为原始数据
+# line_1 = sca.inverse_transform([[-10, -10 * k1 + b1], [10, 10 * k1 + b1]])
+# line_2 = sca.inverse_transform([[-10, -10 * k2 + b2], [10, 10 * k2 + b2]])
+# line_3 = sca.inverse_transform([[-10, -10 * k3 + b3], [10, 10 * k3 + b3]])
+#
+# # 画图
+# plt.figure(figsize=(10, 4))
+# plt.plot(line_1[:, 0], line_1[:, 1], "k:", label="LinearSVC")
+# plt.plot(line_2[:, 0], line_2[:, 1], "b--", label="SGD")
+# plt.plot(line_3[:, 0], line_3[:, 1], "r-", label="SVC")
+# plt.plot(X[:, 0][y == 1], X[:, 1][y == 1], "y^")
+# plt.plot(X[:, 0][y == 0], X[:, 1][y == 0], "bs")
+# plt.xlabel("Petal length", fontsize=16)
+# plt.ylabel("Petal width", fontsize=16)
+# plt.legend(loc="upper center", fontsize=16)
+# plt.axis([0, 5.5, 0, 2])
+# plt.show()
+
+# 9.在MNIST数据集上训练SVM分类器。由于SVM分类器是个二元分类
+# 器，所以你需要使用一对多来为10个数字进行分类。你可能还需要使
+# 用小型验证集来调整超参数以加快进度。最后看看达到的准确率是多
+# 少？
+# data_path = ""
+# mnist = loadmat("./data/mnist-original.mat")
+# X, y = mnist["data"], mnist["label"]
+#
+# # 对数据进行转换，打乱顺序
+# all_data = np.vstack((X, y))
+# all_data = all_data.T
+# np.random.shuffle(all_data)
+# X = all_data[:, range(784)]
+# y = all_data[:, 784]
+# y = y.astype(np.uint8)
+#
+# X_train, y_train, X_test, y_test = X[:60000], y[:60000], X[60000:], y[60000:]
+
+# 最原始的SVM得分
+# svc_clf = LinearSVC(random_state=42)
+# svc_clf.fit(X_train, y_train)
+# y_pre = svc_clf.predict(X_train)
+# svc_score = accuracy_score(y_train, y_pre)
+# print(svc_score)
+
+# 加入归一化
+# sca = StandardScaler()
+# X_sca_train = sca.fit_transform(X_train)
+# X_sca_test = sca.fit_transform(X_test)
+# line_clf = LinearSVC(random_state=42)
+# line_clf.fit(X_sca_train, y_train)
+# y_pred = line_clf.predict(X_sca_train)
+# line_scour = accuracy_score(y_train, y_pred)
+# print(line_scour)
+
+# 使用SVC的内核
+# svc_clf = SVC()
+# svc_clf.fit(X_sca_train[:10000], y[:10000])
+# y_pred = svc_clf.predict(X_sca_train)
+# svc_source = accuracy_score(y_train, y_pred)
+# print(svc_source)
+
+# 使用随机搜索寻找SVC的最优超参数
+# svc_clf = SVC()
+# param = {"gamma": reciprocal(0.001, 0.1), "C": uniform(1, 10)}
+# rand_search_cv = RandomizedSearchCV(svc_clf, param_distributions=param, verbose=2, cv=3)
+# rand_search_cv.fit(X_sca_train[:1000], y_train[:1000])
+#
+#
+# best_model = rand_search_cv.best_estimator_
+# best_model.fit(X_sca_train, y_train)
+# y_pred = best_model.predict(X_sca_train)
+# best_source = accuracy_score(y_train, y_pred)
+# print(rand_search_cv.best_estimator_)
+# print(best_source)
+#
+# y_test_pre = best_model.predict(X_sca_test)
+# best_test_source = accuracy_score(y_test, y_test_pre)
+# print(best_test_source)
+
+# 10.在加州住房数据集上训练一个SVM回归模型。
+housing = datasets.fetch_california_housing()
+X = housing["data"]
+y = housing["target"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 归一化
+sca = StandardScaler()
+X_sca_train = sca.fit_transform(X_train)
+
+# 训练LinearSVR模型
+# line_reg = LinearSVR(random_state=42)
+# line_reg.fit(X_sca_train, y_train)
+# y_pre = line_reg.predict(X_sca_train)
+# line_reg_mse = mean_squared_error(y_train, y_pre)
+# print(line_reg_mse)
+
+# 最基础的SVR
+svr = SVR()
+svr.fit(X_sca_train, y_train)
+y_pre = svr.predict(X_sca_train)
+mse = mean_squared_error(y_train, y_pre)
+print(np.sqrt(mse))
+
+y_test_pre = svr.predict(X_test)
+mse = mean_squared_error(y_test, y_test_pre)
+print(np.sqrt(mse))
+
+# 训练SVR类模型并使用随机搜索寻找最优超参数
+param = {"gamma": reciprocal(0.001, 0.1), "C": uniform(1, 10)}
+rand_svm_reg = RandomizedSearchCV(SVR(), param_distributions=param, cv=3, n_iter=10, verbose=2)
+rand_svm_reg.fit(X_sca_train, y_train)
+best_model = rand_svm_reg.best_estimator_
+y_pre = best_model.predict(X_train)
+svm_reg_source = mean_squared_error(y_train, y_pre)
+print(np.sqrt(svm_reg_source))
+
+y_test_pre = best_model.predict(X_test)
+svm_reg_test_source = mean_squared_error(y_test, y_test_pre)
+print(np.sqrt(svm_reg_test_source))
